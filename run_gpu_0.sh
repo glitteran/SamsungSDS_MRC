@@ -11,7 +11,7 @@ for j in ${lr[@]}; do
 		for l in ${wd[@]}; do
 			for m in ${batch_size[@]}; do
 				for n in ${total_epochs[@]}; do
-					echo `CUDA_VISIBLE_DEVICES=0 python main_all.py --task 3 --output_dir checkpoint --lr ${j} --wr ${k} --wd ${l} --batch_size ${m} --total_epochs ${n} --aug_bt False --aug_rd False --aug_rs False --result_dir results_all/`
+					echo `CUDA_VISIBLE_DEVICES=0 python main.py --lr ${j} --wr ${k} --wd ${l} --batch_size ${m} --total_epochs ${n} --aug_bt False --aug_rd False --aug_rs False --result_dir results_all/`
 				done
 			done
 		done
