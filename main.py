@@ -7,7 +7,7 @@ import numpy as np
 
 import torch
 
-from datasets import load_dataset, load_metric
+from datasets import load_dataset, load_metric, DatasetDict
 from transformers import (
     AutoTokenizer,
     EvalPrediction, 
@@ -26,15 +26,16 @@ python main.py
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', default=0, type=int, help='Seed')
-parser.add_argument('--model', default='bert-base', type=str, help='bert-base, roberta-large, roberta-base, roberta-small')
+parser.add_argument('--model', default='bert-base', type=str, help='bert-base')
 parser.add_argument('--task', default=0, type=int, help='MRC')
 parser.add_argument('--output_dir', default='checkpoint/', type=str, help='Checkpoint directory/')
 parser.add_argument('--result_dir', default='results/', type=str, help='Result directory/')
-parser.add_argument('--lr', default=1e-5, type=float, help='Learning rate [1e-5, 2e-5, 3e-5, 5e-5]')
+parser.add_argument('--lr', default=5e-5, type=float, help='Learning rate [1e-5, 2e-5, 3e-5, 5e-5]')
 parser.add_argument('--wr', default=0., type=float, help='warm-up ratio [0., 0.1, 0.2, 0.6]')
 parser.add_argument('--wd', default=0., type=float, help='weight decay coefficient [0.0, 0.01]')
 parser.add_argument('--batch_size', default=8, type=int, help='batch size [8, 16, 32]')
 parser.add_argument('--total_epochs', default=3, type=int, help='number of epochs [3, 4, 5, 10]')
+parser.add_argument('--train_ratio', default=50, type=int, help='proportion to take for train dataset')
 
 p_args = parser.parse_args()
 
@@ -63,10 +64,13 @@ def compute_metrics(p: EvalPrediction):
     
 ## Prepare Dataset
 data_dir = f"data/{KLUE_TASKS[p_args.task]}"
-data_files = {"train": [], "validation": []}
+data_files = {"train": [], "validation": [], "test":[]}
 data_files["train"].append(f"{data_dir}/train.json")
 data_files["validation"].append(f"{data_dir}/validation.json")
-datasets = load_dataset("json", data_dir=data_dir, data_files=data_files, field='data')
+data_files["test"].append(f"{data_dir}/validation.json")
+half = int(5841*0.5)
+datasets = load_dataset("json", data_dir=data_dir, data_files=data_files, field='data', split=[f'train[:{p_args.train_ratio}%]', f'validation[:{half}]', f'test[{half}:]'])
+datasets = DatasetDict({"train": datasets[0], "validation": datasets[1], "test": datasets[2] })
 
 # Load the metric
 metric = load_metric('./metric.py', KLUE_TASKS[p_args.task])
@@ -222,14 +226,18 @@ def post_processing_function(examples, features, predictions, stage="eval"):
 tokenizer = AutoTokenizer.from_pretrained(f"klue/{p_args.model}")
 
 column_names = datasets["train"].column_names
-train_dataset = datasets["train"]
-print(f"# of Train dataset : {len(train_dataset)}") #17554
-train_dataset = train_dataset.map(prepare_train_features, batched=True, remove_columns=column_names)
+train_examples = datasets["train"]
+train_dataset = train_examples.map(prepare_train_features, batched=True, remove_columns=column_names)
+print(f"# of Original Train Dataset : 17554") #17554
+print(f"# of Splitted Train Dataset : {len(train_examples)}") #8777
+
 column_names = datasets["validation"].column_names
 validation_examples = datasets["validation"]
+test_examples = datasets["test"]
 validation_dataset = validation_examples.map(prepare_validation_features, batched=True, remove_columns=column_names)
+test_dataset = test_examples.map(prepare_validation_features, batched=True, remove_columns=column_names)
 data_collator = (default_data_collator)
-print(f"# of Valid, Test dataset : {len(validation_examples)}") #5841
+print(f"# of Valid dataset : {len(validation_examples)}, Test dataset : {len(test_examples)}") #2920, 2921
 
 args = TrainingArguments(
         output_dir=p_args.output_dir,
@@ -259,7 +267,11 @@ trainer = QuestionAnsweringTrainer(
 )
 
 trainer.train()
-trainer.evaluate(metric_key_prefix='test')
+trainer.evaluate(
+    eval_dataset=test_dataset,
+    eval_examples=test_examples,
+    metric_key_prefix='test'
+)
 
 log_history = trainer.state.log_history
 
