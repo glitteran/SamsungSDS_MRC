@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--seed', default=0, type=int, help='Seed')
 ### 모델 변경시 추가할 부분
 parser.add_argument('--model', default='bert-base', type=str,
-                    help='bert-base, roberta-large, roberta-base, roberta-small, koelectra-base')
+                    help='bert-base, roberta-large, roberta-base, roberta-small, koelectra-base, krbert')
 parser.add_argument('--task', default=0, type=int, help='MRC')
 parser.add_argument('--output_dir', default='checkpoint/', type=str, help='Checkpoint directory/')
 parser.add_argument('--result_dir', default='results/', type=str, help='Result directory/')
@@ -88,7 +88,9 @@ if p_args.model in ('bert-base','roberta-large', 'roberta-base', 'roberta-small'
 elif p_args.model =='koelectra-base' :
     model = AutoModelForQuestionAnswering.from_pretrained("monologg/koelectra-base-v3-discriminator")
     tokenizer = AutoTokenizer.from_pretrained("monologg/koelectra-base-v3-discriminator")
-
+elif p_args.model =='krbert' :
+    model = AutoModelForQuestionAnswering.from_pretrained("snunlp/KR-BERT-char16424")
+    tokenizer = AutoTokenizer.from_pretrained("snunlp/KR-BERT-char16424")
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.
 def prepare_train_features(examples):
@@ -302,3 +304,4 @@ with open(path, mode) as f:
     json.dump(result, f, indent=2)
 
 print("\nFinished...")
+
