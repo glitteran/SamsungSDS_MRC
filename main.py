@@ -22,7 +22,8 @@ from model.MRCTranier import QuestionAnsweringTrainer
 from network import (
     CONFIG_CLASSES,
     TOKENIZER_CLASSES,
-    MODEL_FOR_QUESTION_ANSWERING,
+    #MODEL_FOR_QUESTION_ANSWERING,
+    ElectraForQuestionAnswering,
 )
 
 """
@@ -46,6 +47,7 @@ parser.add_argument('--valid_ratio', default=25, type=int, help='proportion to t
 parser.add_argument('--resume', default=None, type=str, help='resume from checkpoint. ex) 270851bert-base/checkpoint-500/')
 parser.add_argument('--tokenizer', default=None, type=str, help='get vocab.txt to generate tokenizer')
 parser.add_argument('--customizing', default=False, type=bool, help='customizing...')
+parser.add_argument('--freezing', default=False, type=bool, help='Freezing...')
 parser.add_argument('--do_lower_case', default=True, type=bool, help='one of tokenizer argument')
 
 p_args = parser.parse_args()
@@ -98,9 +100,10 @@ else :
         p_args.model,
         do_lower_case=p_args.do_lower_case,
     )
-    model = MODEL_FOR_QUESTION_ANSWERING["koelectra-small-v3"].from_pretrained(
+    model = ElectraForQuestionAnswering.from_pretrained(
         p_args.model,
         config=config,
+        freeze_electra=p_args.freezing
     )
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.

@@ -25,7 +25,7 @@ from torch.nn import CrossEntropyLoss
 
 CONFIG_CLASSES = {"koelectra-small-v3": ElectraConfig}
 TOKENIZER_CLASSES = {"koelectra-small-v3": ElectraTokenizer}
-MODEL_FOR_QUESTION_ANSWERING = {"koelectra-small-v3":ElectraForQuestionAnswering}
+#MODEL_FOR_QUESTION_ANSWERING = {"koelectra-small-v3":ElectraForQuestionAnswering}
 
 class ElectraForQuestionAnswering(ElectraPreTrainedModel):
     config_class = ElectraConfig
@@ -88,9 +88,7 @@ class ElectraForQuestionAnswering(ElectraPreTrainedModel):
             output_hidden_states=output_hidden_states,
         )
 
-        sequence_output = self.attention_layer(discriminator_hidden_states)
-
-        #sequence_output = discriminator_hidden_states[0]
+        sequence_output = discriminator_hidden_states[0]
 
         logits = self.qa_outputs(sequence_output)
         start_logits, end_logits = logits.split(1, dim=-1)
