@@ -19,6 +19,12 @@ from transformers import (
 from utils import ( set_seed, postprocess_qa_predictions )
 from model.MRCTranier import QuestionAnsweringTrainer
 
+from network import (
+    CONFIG_CLASSES,
+    TOKENIZER_CLASSES,
+    MODEL_FOR_QUESTION_ANSWERING,
+)
+
 """
 실행 명령어
 python main.py
@@ -26,7 +32,7 @@ python main.py
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', default=0, type=int, help='Seed')
-parser.add_argument('--model', default='bert-base', type=str, help='bert-base')
+parser.add_argument('--model', default='klue/bert-base', type=str, help='klue/bert-base, monologg/kobert, monologg/distilkobert, monologg/koelectra-base-v3-discriminator')
 parser.add_argument('--task', default=0, type=int, help='MRC')
 parser.add_argument('--output_dir', default='checkpoint/', type=str, help='Checkpoint directory/')
 parser.add_argument('--result_dir', default='results/', type=str, help='Result directory/')
@@ -36,8 +42,14 @@ parser.add_argument('--wd', default=0., type=float, help='weight decay coefficie
 parser.add_argument('--batch_size', default=8, type=int, help='batch size [8, 16, 32]')
 parser.add_argument('--total_epochs', default=3, type=int, help='number of epochs [3, 4, 5, 10]')
 parser.add_argument('--train_ratio', default=50, type=int, help='proportion to take for train dataset')
+parser.add_argument('--valid_ratio', default=25, type=int, help='proportion to take for validation dataset (this value shoud be lower than 50)')
+parser.add_argument('--resume', default=None, type=str, help='resume from checkpoint. ex) 270851bert-base/checkpoint-500/')
+parser.add_argument('--tokenizer', default=None, type=str, help='get vocab.txt to generate tokenizer')
+parser.add_argument('--customizing', default=False, type=bool, help='customizing...')
+parser.add_argument('--do_lower_case', default=True, type=bool, help='one of tokenizer argument')
 
 p_args = parser.parse_args()
+assert p_args.valid_ratio <= 50
 
 start = time.time()
 
@@ -69,15 +81,27 @@ data_files["train"].append(f"{data_dir}/train.json")
 data_files["validation"].append(f"{data_dir}/validation.json")
 data_files["test"].append(f"{data_dir}/validation.json")
 half = int(5841*0.5)
-datasets = load_dataset("json", data_dir=data_dir, data_files=data_files, field='data', split=[f'train[:{p_args.train_ratio}%]', f'validation[:{half}]', f'test[{half}:]'])
+datasets = load_dataset("json", data_dir=data_dir, data_files=data_files, field='data', split=[f'train[:{p_args.train_ratio}%]', f'validation[:{p_args.valid_ratio}%]', f'test[{half}:]'])
 datasets = DatasetDict({"train": datasets[0], "validation": datasets[1], "test": datasets[2] })
 
 # Load the metric
 metric = load_metric('./metric.py', KLUE_TASKS[p_args.task])
 
 ## Prepare Pre-trained Model
-model = AutoModelForQuestionAnswering.from_pretrained(f"klue/{p_args.model}")
-
+if not p_args.customizing:
+    model = AutoModelForQuestionAnswering.from_pretrained(f"{p_args.model}")
+else : 
+    config = CONFIG_CLASSES["koelectra-small-v3"].from_pretrained(
+        p_args.model,
+    )
+    tokenizer = TOKENIZER_CLASSES["koelectra-small-v3"].from_pretrained(
+        p_args.model,
+        do_lower_case=p_args.do_lower_case,
+    )
+    model = MODEL_FOR_QUESTION_ANSWERING["koelectra-small-v3"].from_pretrained(
+        p_args.model,
+        config=config,
+    )
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.
 def prepare_train_features(examples):
@@ -223,7 +247,10 @@ def post_processing_function(examples, features, predictions, stage="eval"):
     references = [{"guid": ex["guid"], "answers": ex[answer_column_name]} for ex in examples]
     return EvalPrediction(predictions=formatted_predictions, label_ids=references)
 
-tokenizer = AutoTokenizer.from_pretrained(f"klue/{p_args.model}")
+if p_args.tokenizer is None:
+    tokenizer = AutoTokenizer.from_pretrained(f"{p_args.model}")
+else:
+    tokenizer = AutoTokenizer.from_pretrained(f"{p_args.model}")
 
 column_names = datasets["train"].column_names
 train_examples = datasets["train"]
@@ -239,8 +266,18 @@ test_dataset = test_examples.map(prepare_validation_features, batched=True, remo
 data_collator = (default_data_collator)
 print(f"# of Valid dataset : {len(validation_examples)}, Test dataset : {len(test_examples)}") #2920, 2921
 
+now = datetime.now()
+now_str = f'{now.day:02}{now.hour:02}{now.minute:02}'
+
+if p_args.resume is None:
+    output_dir_name = p_args.output_dir+now_str+p_args.model.split('/')[1]+'/'
+    ckpt_dir_name = None
+else :
+    output_dir_name =  p_args.output_dir
+    ckpt_dir_name = p_args.output_dir+p_args.resume
+
 args = TrainingArguments(
-        output_dir=p_args.output_dir,
+        output_dir=output_dir_name,
         evaluation_strategy='epoch',
         learning_rate=p_args.lr,
         per_device_train_batch_size=p_args.batch_size,
@@ -266,7 +303,7 @@ trainer = QuestionAnsweringTrainer(
     compute_metrics=compute_metrics,
 )
 
-trainer.train()
+trainer.train(resume_from_checkpoint=ckpt_dir_name)
 trainer.evaluate(
     eval_dataset=test_dataset,
     eval_examples=test_examples,
@@ -277,9 +314,8 @@ log_history = trainer.state.log_history
 
 elapsed_time = (time.time() - start) / 60 # Min.
 
-now = datetime.now()
-now_str = f'{now.day:02}{now.hour:02}{now.minute:02}'
-path = f'{p_args.result_dir}model_{p_args.model}_{now_str}.json'
+model_name = p_args.model.split('/')[1]
+path = f'{p_args.result_dir}model_{model_name}_{now_str}.json'
 mode = 'a' if os.path.isfile(path) else 'w'
 
 hyper_param = {"learning_rate": p_args.lr, "warmup_ratio": p_args.wr, "weight_decay": p_args.wd, "batch_size": p_args.batch_size, "epochs":p_args.total_epochs}

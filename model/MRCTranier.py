@@ -34,7 +34,8 @@ class QuestionAnsweringTrainer(Trainer):
             # Prefix all keys with metric_key_prefix + '_'
             for key in list(metrics.keys()):
                 if not key.startswith(f"{metric_key_prefix}_"):
-                    metrics[f"{metric_key_prefix}_{key}"] = metrics.pop(key)
+                    value = metrics.pop(key)
+                    metrics[f"{metric_key_prefix}_{key}"] =value
 
             self.log(metrics)
         else:
@@ -43,4 +44,21 @@ class QuestionAnsweringTrainer(Trainer):
         self.control = self.callback_handler.on_evaluate(self.args, self.state, self.control, metrics)
         return metrics
 
-   
+    """
+    def train(
+        self,
+        ##python main.py --resume 270851bert-base/checkpoint-500/
+        resume_from_checkpoint: Optional[Union[str, bool]] = None,
+        trial: Union["optuna.Trial", Dict[str, Any]] = None,
+        ignore_keys_for_eval: Optional[List[str]] = None,
+        **kwargs,
+    ):
+    
+    train 함수에서 resume_from_checkpoint 인자로 할 수 있는 것 
+    1. resume_from_checkpoint(str ckpt path)안에 파일 접근하기
+    2. config = PretrainedConfig.from_json_file(os.path.join(resume_from_checkpoint, CONFIG_NAME)) #CONFIG_NAME = "config.json"
+    3. state_dict = torch.load(os.path.join(resume_from_checkpoint, WEIGHTS_NAME), map_location="cpu") #WEIGHTS_NAME = "pytorch_model.bin"
+    4. self._load_optimizer_and_scheduler(resume_from_checkpoint)
+    5. self.state = TrainerState.load_from_json(os.path.join(resume_from_checkpoint, "trainer_state.json"))
+    6. self._load_rng_state(resume_from_checkpoint) #rng_state.pth 
+    """
