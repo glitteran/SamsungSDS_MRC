@@ -33,7 +33,7 @@ python main.py
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', default=0, type=int, help='Seed')
 parser.add_argument('--model', default='klue/bert-base', type=str,
-                    help='klue/bert-base, monologg/kobert, monologg/distilkobert, monologg/koelectra-base-v3-discriminator ,snunlp/KR-BERT-char16424, ')
+                    help='klue/bert-base, monologg/kobert, monologg/distilkobert, monologg/koelectra-base-v3-discriminator ,snunlp/KR-BERT-char16424, ainize/klue-bert-base-mrc')
 parser.add_argument('--task', default=0, type=int, help='MRC')
 parser.add_argument('--output_dir', default='checkpoint/', type=str, help='Checkpoint directory/')
 parser.add_argument('--result_dir', default='results/', type=str, help='Result directory/')
