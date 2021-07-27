@@ -26,7 +26,6 @@ from network import (
 )
 
 """
-실행 명령어
 python main.py
 """
 
