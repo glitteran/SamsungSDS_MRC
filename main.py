@@ -19,6 +19,12 @@ from transformers import (
 from utils import ( set_seed, postprocess_qa_predictions )
 from model.MRCTranier import QuestionAnsweringTrainer
 
+from network import (
+    CONFIG_CLASSES,
+    TOKENIZER_CLASSES,
+    MODEL_FOR_QUESTION_ANSWERING,
+)
+
 """
 실행 명령어
 python main.py
@@ -39,6 +45,8 @@ parser.add_argument('--train_ratio', default=50, type=int, help='proportion to t
 parser.add_argument('--valid_ratio', default=25, type=int, help='proportion to take for validation dataset (this value shoud be lower than 50)')
 parser.add_argument('--resume', default=None, type=str, help='resume from checkpoint. ex) 270851bert-base/checkpoint-500/')
 parser.add_argument('--tokenizer', default=None, type=str, help='get vocab.txt to generate tokenizer')
+parser.add_argument('--customizing', default=False, type=bool, help='customizing...')
+parser.add_argument('--do_lower_case', default=True, type=bool, help='one of tokenizer argument')
 
 p_args = parser.parse_args()
 assert p_args.valid_ratio <= 50
@@ -80,8 +88,20 @@ datasets = DatasetDict({"train": datasets[0], "validation": datasets[1], "test":
 metric = load_metric('./metric.py', KLUE_TASKS[p_args.task])
 
 ## Prepare Pre-trained Model
-model = AutoModelForQuestionAnswering.from_pretrained(f"{p_args.model}")
-
+if not p_args.customizing:
+    model = AutoModelForQuestionAnswering.from_pretrained(f"{p_args.model}")
+else : 
+    config = CONFIG_CLASSES["koelectra-small-v3"].from_pretrained(
+        p_args.model,
+    )
+    tokenizer = TOKENIZER_CLASSES["koelectra-small-v3"].from_pretrained(
+        p_args.model,
+        do_lower_case=p_args.do_lower_case,
+    )
+    model = MODEL_FOR_QUESTION_ANSWERING["koelectra-small-v3"].from_pretrained(
+        p_args.model,
+        config=config,
+    )
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.
 def prepare_train_features(examples):
