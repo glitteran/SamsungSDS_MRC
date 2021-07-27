@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 import os
 import argparse
 import json
@@ -92,14 +93,14 @@ metric = load_metric('./metric.py', KLUE_TASKS[p_args.task])
 if not p_args.customizing:
     model = AutoModelForQuestionAnswering.from_pretrained(f"{p_args.model}")
 else : 
-    config = CONFIG_CLASSES["koelectra-small-v3"].from_pretrained(
+    config = CONFIG_CLASSES[p_args.model].from_pretrained(
         p_args.model,
     )
-    tokenizer = TOKENIZER_CLASSES["koelectra-small-v3"].from_pretrained(
+    tokenizer = TOKENIZER_CLASSES[p_args.model].from_pretrained(
         p_args.model,
         do_lower_case=p_args.do_lower_case,
     )
-    model = MODEL_FOR_QUESTION_ANSWERING["koelectra-small-v3"].from_pretrained(
+    model = MODEL_FOR_QUESTION_ANSWERING[p_args.model].from_pretrained(
         p_args.model,
         config=config,
     )

@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 import os
 import argparse
 import json
@@ -14,6 +15,7 @@ from transformers import (
     TrainingArguments, 
     AutoModelForQuestionAnswering,
     default_data_collator,
+    BertForQuestionAnswering
 )
 
 from utils import ( set_seed, postprocess_qa_predictions )

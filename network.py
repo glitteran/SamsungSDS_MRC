@@ -1,12 +1,12 @@
+#-*- coding: utf-8 -*-
 from transformers.models.electra.modeling_electra import (
     ElectraModel,
     ElectraPreTrainedModel
 )
 
 from transformers import (
-    ElectraConfig,
-    ElectraTokenizer,
-    ElectraForQuestionAnswering
+    ElectraConfig, ElectraTokenizer, ElectraForQuestionAnswering,
+    AlbertConfig, AlbertTokenizer, AlbertForQuestionAnswering,
 )
 
 from transformers.modeling_outputs import (
@@ -14,6 +14,7 @@ from transformers.modeling_outputs import (
 )
 
 from torch import nn
+
 from torch.nn import CrossEntropyLoss
 
 """
@@ -23,9 +24,9 @@ from torch.nn import CrossEntropyLoss
 3. https://github.com/huggingface/transformers/tree/master/src/transformers
 """
 
-CONFIG_CLASSES = {"koelectra-small-v3": ElectraConfig}
-TOKENIZER_CLASSES = {"koelectra-small-v3": ElectraTokenizer}
-MODEL_FOR_QUESTION_ANSWERING = {"koelectra-small-v3":ElectraForQuestionAnswering}
+CONFIG_CLASSES = {"koelectra-small-v3": ElectraConfig,'albert':AlbertConfig}
+TOKENIZER_CLASSES = {"koelectra-small-v3": ElectraTokenizer,'albert':AlbertTokenizer}
+MODEL_FOR_QUESTION_ANSWERING = {"koelectra-small-v3":ElectraForQuestionAnswering, 'albert':AlbertForQuestionAnswering}
 
 class ElectraForQuestionAnswering(ElectraPreTrainedModel):
     config_class = ElectraConfig
@@ -88,9 +89,9 @@ class ElectraForQuestionAnswering(ElectraPreTrainedModel):
             output_hidden_states=output_hidden_states,
         )
 
-        sequence_output = self.attention_layer(discriminator_hidden_states)
+        # sequence_output = self.attention_layer(discriminator_hidden_states)
 
-        #sequence_output = discriminator_hidden_states[0]
+        sequence_output = discriminator_hidden_states[0]
 
         logits = self.qa_outputs(sequence_output)
         start_logits, end_logits = logits.split(1, dim=-1)
@@ -128,3 +129,5 @@ class ElectraForQuestionAnswering(ElectraPreTrainedModel):
             hidden_states=discriminator_hidden_states.hidden_states,
             attentions=discriminator_hidden_states.attentions,
         )
+
+

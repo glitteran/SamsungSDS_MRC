@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from transformers import Trainer
 
 class QuestionAnsweringTrainer(Trainer):
