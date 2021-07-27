@@ -251,8 +251,10 @@ now_str = f'{now.day:02}{now.hour:02}{now.minute:02}'
 
 if p_args.resume is None:
     output_dir_name = p_args.output_dir+now_str+p_args.model.split('/')[1]+'/'
+    ckpt_dir_name = None
 else :
     output_dir_name =  p_args.output_dir
+    ckpt_dir_name = p_args.output_dir+p_args.resume
 
 args = TrainingArguments(
         output_dir=output_dir_name,
@@ -281,7 +283,7 @@ trainer = QuestionAnsweringTrainer(
     compute_metrics=compute_metrics,
 )
 
-trainer.train(resume_from_checkpoint=p_args.output_dir+p_args.resume)
+trainer.train(resume_from_checkpoint=ckpt_dir_name)
 trainer.evaluate(
     eval_dataset=test_dataset,
     eval_examples=test_examples,
