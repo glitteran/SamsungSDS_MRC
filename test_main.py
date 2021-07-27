@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--seed', default=0, type=int, help='Seed')
 ### 모델 변경시 추가할 부분
 parser.add_argument('--model', default='bert-base', type=str,
-                    help='bert-base, roberta-large, roberta-base, roberta-small, koelectra-base, krbert')
+                    help='bert-base, roberta-large, roberta-base, roberta-small, koelectra-base, krbert, ainize')
 parser.add_argument('--task', default=0, type=int, help='MRC')
 parser.add_argument('--output_dir', default='checkpoint/', type=str, help='Checkpoint directory/')
 parser.add_argument('--result_dir', default='results/', type=str, help='Result directory/')
@@ -91,6 +91,19 @@ elif p_args.model =='koelectra-base' :
 elif p_args.model =='krbert' :
     model = AutoModelForQuestionAnswering.from_pretrained("snunlp/KR-BERT-char16424")
     tokenizer = AutoTokenizer.from_pretrained("snunlp/KR-BERT-char16424")
+elif p_args.model =='ainize' :
+    model = AutoModelForQuestionAnswering.from_pretrained("ainize/klue-bert-base-mrc")
+    tokenizer = AutoTokenizer.from_pretrained("ainize/klue-bert-base-mrc")
+elif p_args.model == 'kobart':
+    model = AutoModelForQuestionAnswering.from_pretrained("byeongal/kobart")
+    tokenizer = AutoTokenizer.from_pretrained("byeongal/kobart")
+elif p_args.model == 'kobert':
+    model = AutoModelForQuestionAnswering.from_pretrained("skt/kobert-base-v1")
+    tokenizer = AutoTokenizer.from_pretrained("skt/kobert-base-v1")
+
+
+
+
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.
 def prepare_train_features(examples):
