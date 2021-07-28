@@ -36,6 +36,10 @@ def postprocess_qa_predictions(
     prefix: Optional[str] = None,
     log_level: Optional[int] = None,
 ):
+    """
+    transformers 기반 모델에서 도출된 logit값들에 대하여 어떤 값을 best로 뽑을지 정의하고, 
+    text, probability로 전처리한 후 파일로 저장됨.  
+    """
     assert len(predictions) == 2, "`predictions` should be a tuple with two elements (start_logits, end_logits)."
     #predictions : tuple(array[[]], array[[]]) 형식으로 출력됨. (2220, 512) (2220, 512)
     #predictions : transformer 기반 모델에서 나온 마지막 embedding에서 softmax를 통과하기 전 값들임. 
@@ -210,7 +214,7 @@ def postprocess_qa_predictions(
     # If we have an output_dir, let's save all those dicts.
     if output_dir is not None:
         assert os.path.isdir(output_dir), f"{output_dir} is not a directory."
-        
+
         #원본데이터에서 guid에 적힌 고유 번호로 key를 저장하고, 가장 높은 점수의 text만을 저장함. 
         prediction_file = os.path.join( 
             output_dir, "predictions.json" if prefix is None else f"{prefix}_predictions.json"

@@ -399,7 +399,7 @@ trainer = QuestionAnsweringTrainer(
     post_process_function=post_processing_function,
     compute_metrics=compute_metrics,
 )
-
+# train함수 : https://huggingface.co/transformers/_modules/transformers/trainer.html#Trainer.train
 trainer.train(resume_from_checkpoint=ckpt_dir_name)
 trainer.evaluate(
     eval_dataset=test_dataset,
