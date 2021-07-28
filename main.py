@@ -23,7 +23,7 @@ from model.MRCTranier import QuestionAnsweringTrainer
 from network import (
     CONFIG_CLASSES,
     TOKENIZER_CLASSES,
-    #MODEL_FOR_QUESTION_ANSWERING,
+    MODEL_FOR_QUESTION_ANSWERING,
     ElectraForQuestionAnswering,
 )
 
