@@ -26,6 +26,8 @@ from network import (
     ElectraForQuestionAnswering,
 )
 
+from eda import EDA
+
 """
 실행 명령어
 python main.py
@@ -49,6 +51,7 @@ parser.add_argument('--tokenizer', default=None, type=str, help='get vocab.txt t
 parser.add_argument('--customizing', default=False, type=bool, help='customizing...')
 parser.add_argument('--freezing', default=False, type=bool, help='Freezing...')
 parser.add_argument('--do_lower_case', default=True, type=bool, help='one of tokenizer argument')
+parser.add_argument('--do_eda', default=False, type=bool, help='Easy Data Augmentation')
 
 p_args = parser.parse_args()
 assert p_args.valid_ratio <= 50
@@ -348,6 +351,10 @@ https://huggingface.co/transformers/main_classes/data_collator.html
 """
 column_names = datasets["train"].column_names
 train_examples = datasets["train"]
+####################################EDIT HERE####################################
+if p_args.do_eda:
+    train_dataset = EDA(train_dataset)
+####################################EDIT HERE####################################
 train_dataset = train_examples.map(prepare_train_features, batched=True, remove_columns=column_names)
 print(f"# of Original Train Dataset : 17554") #17554
 print(f"# of Splitted Train Dataset : {len(train_examples)}") #8777
