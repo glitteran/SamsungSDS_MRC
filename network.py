@@ -90,7 +90,6 @@ class ElectraForQuestionAnswering(ElectraPreTrainedModel):
         )
 
         # sequence_output = self.attention_layer(discriminator_hidden_states)
-
         sequence_output = discriminator_hidden_states[0]
 
         logits = self.qa_outputs(sequence_output)
@@ -129,5 +128,3 @@ class ElectraForQuestionAnswering(ElectraPreTrainedModel):
             hidden_states=discriminator_hidden_states.hidden_states,
             attentions=discriminator_hidden_states.attentions,
         )
-
-
