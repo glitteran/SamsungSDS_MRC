@@ -102,12 +102,9 @@ else :
         p_args.model,
         do_lower_case=p_args.do_lower_case,
     )
-
-    # model = ElectraForQuestionAnswering.from_pretrained(
     model = MODEL_FOR_QUESTION_ANSWERING[p_args.model].from_pretrained(
         p_args.model,
         config=config,
-        freeze_electra=p_args.freezing
     )
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.
