@@ -40,6 +40,7 @@ class BertForQuestionAnswering(BertPreTrainedModel):
         self.num_labels = config.num_labels
 
         self.bert = BertModel(config, add_pooling_layer=False)
+        self.gru = nn.GRU(config.hidden_size, config.hidden_size)
         self.qa_outputs = nn.Linear(config.hidden_size, config.num_labels)
 
         self.init_weights()
@@ -83,6 +84,8 @@ class BertForQuestionAnswering(BertPreTrainedModel):
         )
 
         sequence_output = outputs[0]
+
+        sequence_output = self.gru(sequence_output)
 
         logits = self.qa_outputs(sequence_output)
         start_logits, end_logits = logits.split(1, dim=-1)
