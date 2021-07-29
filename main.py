@@ -351,10 +351,17 @@ https://huggingface.co/transformers/main_classes/data_collator.html
 """
 column_names = datasets["train"].column_names
 train_examples = datasets["train"]
+
 ####################################EDIT HERE####################################
 if p_args.do_eda:
-    train_dataset = EDA(train_dataset)
+    # train_dataset = EDA(train_dataset)
+    for train_example in train_examples:
+        augmented_train_example = train_example
+        for idx, augmented_question in enumerate(EDA(train_example['question'])):
+            augmented_train_example['question'] = augmented_question
+            train_examples = train_examples.add_item(augmented_train_example)
 ####################################EDIT HERE####################################
+
 train_dataset = train_examples.map(prepare_train_features, batched=True, remove_columns=column_names)
 print(f"# of Original Train Dataset : 17554") #17554
 print(f"# of Splitted Train Dataset : {len(train_examples)}") #8777

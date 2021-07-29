@@ -181,6 +181,7 @@ random seed 고정
 최종적으로 증강되는 데이터들 중 우연히 겹치는 데이터는 삭제하는 작업이 추가되어야 함. 
 """
 ########################################################################
+komoran = Komoran()
 def EDA(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9):
 	#문장에서 한글만 남김. 
 	#내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는? -> 내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는?
@@ -188,7 +189,8 @@ def EDA(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 
 	#띄어쓰기 단위로 분리 
 	#내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는? -> '내년까지', '87만kw급', '화력발전소', '2기가', '추가로', '들어서는', '도시는?'
-	words = sentence.split(' ')
+	# words = sentence.split(' ')
+	words = komoran.nouns(sentence)
 	print("words1",words)
 
 	# 분리된 토큰 중에 "" 토큰은 없애기 
