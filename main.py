@@ -28,6 +28,7 @@ from network import (
 )
 
 from eda import EDA
+from translate import translate
 
 """
 실행 명령어
@@ -54,6 +55,7 @@ parser.add_argument('--customizing', default=False, type=bool, help='customizing
 parser.add_argument('--freezing', default=False, type=bool, help='Freezing...')
 parser.add_argument('--do_lower_case', default=True, type=bool, help='one of tokenizer argument')
 parser.add_argument('--do_eda', default=False, type=bool, help='Easy Data Augmentation')
+parser.add_argument('--do_translate', default=False, type=bool, help='translating Data Augmentation')
 
 p_args = parser.parse_args()
 assert p_args.valid_ratio <= 50
@@ -357,7 +359,14 @@ column_names = datasets["train"].column_names
 train_examples = datasets["train"]
 ####################################EDIT HERE####################################
 if p_args.do_eda:
-    train_dataset = EDA(train_dataset)
+    train_examples = EDA(train_examples)
+
+if p_args.do_translate:
+    train_examples = translate(train_examples)
+    # test = translate(train_examples.select([0,1]))
+    # print(test)
+# 중복 제거 필요
+
 ####################################EDIT HERE####################################
 train_dataset = train_examples.map(prepare_train_features, batched=True, remove_columns=column_names)
 print(f"# of Original Train Dataset : 17554") #17554
