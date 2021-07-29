@@ -190,7 +190,7 @@ def EDA(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 	#띄어쓰기 단위로 분리 
 	#내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는? -> '내년까지', '87만kw급', '화력발전소', '2기가', '추가로', '들어서는', '도시는?'
 	# words = sentence.split(' ')
-	words = komoran.nouns(sentence)
+	words = komoran.morphs(sentence)
 	print("words1",words)
 
 	# 분리된 토큰 중에 "" 토큰은 없애기 
