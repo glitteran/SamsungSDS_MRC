@@ -1,4 +1,3 @@
-#-*- coding: utf-8 -*-
 import re
 import string
 import collections
@@ -58,15 +57,16 @@ def get_raw_scores(dataset, preds):
     for article in dataset:
         for p in article["paragraphs"]:
             for qa in p["qas"]:
+                # 데이터에서 qid 값을 가져옴
                 qid = qa["guid"]
                 gold_answers = [t for t in qa["answers"]["text"] if normalize_answer(t)]
                 if not gold_answers:
                     # For unanswerable questions, only correct answer is empty string
-                    gold_answers = [""]
-                if qid not in preds:
+                    gold_answers = [""] # 정답이 존재하지 않는 경우 빈 문자열로 반환
+                if qid not in preds: # 데이터에서 가져온 qid값이 모델이 예측한 guid에 없을 경우 넘김.  
                     print("Missing prediction for %s" % qid)
                     continue
-                a_pred = preds[qid]
+                a_pred = preds[qid] # p["prediction_text"] 값을 가져옴. 
                 # Take max over all gold answers
                 exact_scores[qid] = max(compute_exact(a, a_pred) for a in gold_answers)
                 f1_scores[qid] = max(compute_f1(a, a_pred) for a in gold_answers)
@@ -80,13 +80,17 @@ def normalize_answer(s):
         return re.sub(regex, " ", text)
 
     def white_space_fix(text):
+        #띄어쓰기 단위로 쪼개서 다시 붙임. 
         return " ".join(text.split())
 
     def remove_punc(text):
+        #string.punctuation: !"#$%&'()*+, -./:;<=>?@[\]^_`{|}~
         exclude = set(string.punctuation)
+        #char하나하나 특수기호 다 제거하고 다 붙임
         return "".join(ch for ch in text if ch not in exclude)
 
     def lower(text):
+        #소문자로 변환
         return text.lower()
 
     return white_space_fix(remove_articles(remove_punc(lower(s))))
@@ -101,6 +105,7 @@ def compute_f1(a_gold, a_pred):
     num_same = sum(common.values())
     if len(gold_toks) == 0 or len(pred_toks) == 0:
         # If either is no-answer, then F1 is 1 if they agree, 0 otherwise
+        ## 실제 정답값이 없거나, 모델이 정답이 없다고 예측할 경우 둘 다 같이 예측해야 1, 아니면 0으로 판단함. 
         return int(gold_toks == pred_toks)
     if num_same == 0:
         return 0
@@ -110,6 +115,7 @@ def compute_f1(a_gold, a_pred):
     return f1
 
 def get_tokens(s):
+    #띄어쓰기 단위로 쪼갬 
     if not s:
         return []
     return normalize_answer(s).split()
