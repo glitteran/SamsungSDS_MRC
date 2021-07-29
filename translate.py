@@ -2,6 +2,7 @@
 
 from transformers import MBartForConditionalGeneration, MBart50Tokenizer, MBart50TokenizerFast
 from copy import deepcopy
+from datetime import datetime
 from transformers import (
     AutoTokenizer,
     EvalPrediction,
@@ -35,6 +36,8 @@ def translate(train_examples, src_lang ="ko_KR", target_lang=['en_XX',],ouput_na
             trans_data['question'] = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
             train_examples = train_examples.add_item(trans_data)
 
-    train_examples.save_to_disk(f"{ouput_name}-{'-'.join(target_lang)}")
+    now = datetime.now()
+    now_str = f'{now.day:02}{now.hour:02}{now.minute:02}'
+    train_examples.save_to_disk(f"checkpoint/{ouput_name}-{'-'.join(target_lang)}-{now_str}")
 
     return train_examples
