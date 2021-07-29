@@ -16,12 +16,12 @@ from tqdm import tqdm
 #     copied = Dataset.load_from_disk('data/copied.json/')
 
 def translate(train_examples, src_lang ="ko_KR", target_lang=['en_XX',],ouput_name='translated') :
-    model = MBartForConditionalGeneration.from_pretrained("./mbart-large-50-many-to-many-mmt")
-    tokenizer = AutoTokenizer.from_pretrained("./mbart-large-50-many-to-many-mmt")
+    model = MBartForConditionalGeneration.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
+    tokenizer = AutoTokenizer.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
     origin_examples = deepcopy(train_examples)
-    for target in tqdm(target_lang) :
+    for target in target_lang :
         translate_examples=deepcopy(origin_examples)
-        for trans_data in translate_examples :
+        for trans_data in tqdm(translate_examples) :
             # kor -> target lang
             tokenizer.src_lang = src_lang
             encoded_ko = tokenizer(trans_data['question'], return_tensors="pt")

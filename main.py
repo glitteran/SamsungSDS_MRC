@@ -8,7 +8,7 @@ import numpy as np
 
 import torch
 
-from datasets import load_dataset, load_metric, DatasetDict
+from datasets import load_dataset, load_metric, DatasetDict, Dataset
 from transformers import (
     AutoTokenizer,
     EvalPrediction, 
@@ -56,6 +56,8 @@ parser.add_argument('--freezing', default=False, type=bool, help='Freezing...')
 parser.add_argument('--do_lower_case', default=True, type=bool, help='one of tokenizer argument')
 parser.add_argument('--do_eda', default=False, type=bool, help='Easy Data Augmentation')
 parser.add_argument('--do_translate', default=False, type=bool, help='translating Data Augmentation')
+parser.add_argument('--target_lang', default='en_XX', type=str, help='translate target language')
+parser.add_argument('--load_translated', default='', type=str, help='load translated dataset [translated-en_XX]')
 
 p_args = parser.parse_args()
 assert p_args.valid_ratio <= 50
@@ -362,7 +364,11 @@ if p_args.do_eda:
     train_examples = EDA(train_examples)
 
 if p_args.do_translate:
-    train_examples = translate(train_examples)
+    target_lang = p_args.target_lang.split(',')
+    if p_args.load_translated:
+        train_examples = Dataset.load_from_disk(p_args.load_translated)
+    else:
+        train_examples = translate(train_examples, target_lang=target_lang)
     # test = translate(train_examples.select([0,1]))
     # print(test)
 # 중복 제거 필요
