@@ -121,7 +121,7 @@ else :
     )
 ## Preprocessing the data
 # Tokenize all texts and align the labels with them.
-def prepare_train_features(examples, do_eda=False):
+def prepare_train_features(examples):
     # Preprocessing is slightly different for training and evaluation
     """
     <Transformers Tokenizer>
@@ -156,14 +156,13 @@ def prepare_train_features(examples, do_eda=False):
     context_column_name = "context"
     answer_column_name = "answers"
 
-    if do_eda:
-        for idx, question in enumerate(examples[question_column_name]):
-            augmented_questions = EDA(question)
-            for k, v in examples.items():
-                if k == question_column_name:
-                    examples[k] = v + augmented_questions
-                else:
-                    examples[k] = v + [examples[k][idx] for i in range(len(augmented_questions))]
+    for idx, question in enumerate(examples[question_column_name]):
+        augmented_questions = EDA(question)
+        for k, v in examples.items():
+            if k == question_column_name:
+                examples[k] = v + augmented_questions
+            else:
+                examples[k] = v + [examples[k][idx] for i in range(len(augmented_questions))]
 
     # Padding side determines if we do (question|context) or (context|question)
     ## pad_on_right이 True 이면 question, context 순으로 배치되고 context에 대해서만 truncation이 이루어짐. 
@@ -361,7 +360,7 @@ https://huggingface.co/transformers/main_classes/data_collator.html
 column_names = datasets["train"].column_names
 train_examples = datasets["train"]
 
-train_dataset = train_examples.map(prepare_train_features(do_eda=p_args.do_eda), batched=True, remove_columns=column_names)
+train_dataset = train_examples.map(prepare_train_features, batched=True, remove_columns=column_names)
 print(f"# of Original Train Dataset : 17554") #17554
 print(f"# of Splitted Train Dataset : {len(train_examples)}") #8777
 if p_args.do_eda:
