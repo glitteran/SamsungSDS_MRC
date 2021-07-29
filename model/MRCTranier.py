@@ -2,6 +2,11 @@
 from transformers import Trainer
 
 class QuestionAnsweringTrainer(Trainer):
+    """
+    model, args, train_dataset, eval_dataset, tokenizer, data_collator, compute_metrics가 추가로 들어감. 
+    post_process_function: formatted_predictions(guid, prediction_text), references(guit, answers) 생성. metric을 계산하기 위한 이전 과정 
+    compute metrics: post_process_function의 리턴값인 EvalPrediction을 인풋으로 받아서  exact, f1값 리턴. 
+    """
     def __init__(self, *args, eval_examples=None, post_process_function=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.eval_examples = eval_examples
@@ -15,6 +20,8 @@ class QuestionAnsweringTrainer(Trainer):
         # Temporarily disable metric computation, we will do it in the loop here.
         compute_metrics = self.compute_metrics
         self.compute_metrics = None
+        ## evaluation_loop() 함수의 작동을 확인하려면 https://huggingface.co/transformers/_modules/transformers/trainer.html#Trainer.get_train_dataloader
+        ## return EvalLoopOutput(predictions=all_preds, label_ids=all_labels, metrics=metrics, num_samples=num_samples)
         eval_loop = self.prediction_loop if self.args.use_legacy_prediction_loop else self.evaluation_loop
         try:
             output = eval_loop(
@@ -25,7 +32,7 @@ class QuestionAnsweringTrainer(Trainer):
                 prediction_loss_only=True if compute_metrics is None else None,
                 ignore_keys=ignore_keys,
             )
-        finally:
+        finally: #try 실행 후 항상 실행되는 것. 
             self.compute_metrics = compute_metrics
 
         if self.post_process_function is not None and self.compute_metrics is not None:
@@ -33,6 +40,10 @@ class QuestionAnsweringTrainer(Trainer):
             metrics = self.compute_metrics(eval_preds)
 
             # Prefix all keys with metric_key_prefix + '_'
+            ## metrics.keys() 
+            ##  "exact": 100.0 * sum(exact_raw.values()) / total,
+            ##  "f1": 100.0 * sum(f1_raw.values()) / total,
+            ##  "total": total
             for key in list(metrics.keys()):
                 if not key.startswith(f"{metric_key_prefix}_"):
                     value = metrics.pop(key)
