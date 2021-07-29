@@ -182,7 +182,7 @@ random seed 고정
 """
 ########################################################################
 komoran = Komoran()
-def EDA(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9):
+def EDA(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=0):
 	#문장에서 한글만 남김. 
 	#내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는? -> 내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는?
 	sentence = get_only_hangul(sentence)
@@ -190,6 +190,7 @@ def EDA(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 	#띄어쓰기 단위로 분리 
 	#내년까지 87만kw급 화력발전소 2기가 추가로 들어서는 도시는? -> '내년까지', '87만kw급', '화력발전소', '2기가', '추가로', '들어서는', '도시는?'
 	# words = sentence.split(' ')
+	# words = komoran.nouns(sentence)
 	words = komoran.morphs(sentence)
 	print("words1",words)
 
