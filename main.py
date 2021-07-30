@@ -366,7 +366,8 @@ if p_args.do_eda:
 if p_args.do_translate:
     target_lang = p_args.target_lang.split(',')
     if p_args.load_translated:
-        train_examples = Dataset.load_from_disk(p_args.load_translated)
+        load_translated_examples = Dataset.load_from_disk(p_args.load_translated)
+        train_examples = translate(train_examples, train_examples=load_translated_examples, target_lang=target_lang)
     else:
         train_examples = translate(train_examples, target_lang=target_lang)
     # test = translate(train_examples.select([0,1]))
