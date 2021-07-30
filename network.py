@@ -12,7 +12,7 @@ from transformers.models.albert.modeling_albert import (
 from transformers import (
     ElectraConfig, ElectraTokenizer, ElectraForQuestionAnswering,
     AlbertConfig, AlbertTokenizer, AlbertForQuestionAnswering,
-    BertConfig, BertTokenizer, BertForQuestionAnswering,
+    BertConfig, BertTokenizer, # BertForQuestionAnswering,
 )
 
 from transformers.modeling_outputs import (
@@ -171,13 +171,14 @@ class BertForQuestionAnswering(BertPreTrainedModel):
 
         self.init_weights()
 
-    @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
-    @add_code_sample_docstrings(
-        tokenizer_class=_TOKENIZER_FOR_DOC,
-        checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=QuestionAnsweringModelOutput,
-        config_class=_CONFIG_FOR_DOC,
-    )
+    # @add_start_docstrings_to_model_forward(BERT_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    # @add_code_sample_docstrings(
+    #     tokenizer_class=_TOKENIZER_FOR_DOC,
+    #     checkpoint=_CHECKPOINT_FOR_DOC,
+    #     output_type=QuestionAnsweringModelOutput,
+    #     config_class=_CONFIG_FOR_DOC,
+    # )
+
     def forward(
         self,
         input_ids=None,
